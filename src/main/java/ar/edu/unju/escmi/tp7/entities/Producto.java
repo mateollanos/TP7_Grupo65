@@ -75,5 +75,4 @@ public class Producto {
 		System.out.println("Descripcion: "+descripcion);
 		System.out.println("Precio: "+precioUnitario);
 	}
-	
 }
