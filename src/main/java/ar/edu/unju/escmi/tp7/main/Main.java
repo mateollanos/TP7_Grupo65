@@ -1,349 +1,424 @@
 package ar.edu.unju.escmi.tp7.main;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-
-import ar.edu.unju.escmi.tp7.dao.imp.*;
 import ar.edu.unju.escmi.tp7.entities.*;
+import ar.edu.unju.escmi.tp7.dao.imp.*;
 
 public class Main {
+
+	private static ProductoDaoImp productoDaoImp = new ProductoDaoImp();
+	private static ClienteDaoImp clienteDaoImp = new ClienteDaoImp();
+	private static FacturaDaoImp facturaDaoImp = new FacturaDaoImp();
 	
-    private static EntityManager manager = Persistence.createEntityManagerFactory("myJpaUnit").createEntityManager();
+	public static void main(String[] args) {
+		
+		Scanner sc = new Scanner(System.in);
+		
+		boolean band=true;
+		
+		do {
+			System.out.println("*****MENU*****");
+			System.out.println("1-Alta de cliente");
+			System.out.println("2-Alta de producto");
+			System.out.println("3-Vender productos");
+			System.out.println("4-Buscar una factura por id");
+			System.out.println("5-Eliminar una factura");
+			System.out.println("6-Eliminar un producto");
+			System.out.println("7-Modificar datos del cliente");
+			System.out.println("8-Modificar precio del producto");
+			System.out.println("9-Mostrar todas las facturas");
+			System.out.println("10-Mostrar todos los clientes");
+			System.out.println("11-Mostrar facturas con un precio mayor a $500.000");
+			System.out.println("12-Salir");
+			System.out.println("***************");
+			System.out.print("Ingrese una opcion: ");
+			String op = sc.nextLine();
+			
+			switch(op) {
+			case "1":
+				altaCliente(sc);
+			break;
+			
+			case "2":
+				altaProducto(sc);
+			break;
+			
+			case "3":
+				venderProducto(sc);
+			break;
+			
+			case "4":
+				System.out.print("\nIngrese el numero de ID de la factura: ");
+				long id = sc.nextLong();
+				buscarFactura(id);
+			break;
+			
+			case "5":
+				System.out.print("\nIngrese el numero de ID de la factura para poder eliminarla: ");
+				long idE = sc.nextLong();
+				eliminarFactura(idE);
+			break;
+			
+			case "6":
+				System.out.print("\nIngrese el numero de ID del producto para poder eliminarlo: ");
+				long idP = sc.nextLong();
+				eliminarProducto(idP);
+			break;
+			
+			case "7":
+				modificarCliente(sc);
+			break;
+			
+			case "8":
+				modificarProducto(sc);
+			break;
+			
+			case "9":
+				mostrarFacturas();
+			break;
+			
+			case "10":
+				mostrarClientes();
+			break;
+			
+			case "11":
+				mostrarFacturasFiltradas();
+			break;
+			
+			case "12":
+				System.out.println("\n*****FIN DEL PROGRAMA*****\n");
+				band=false;
+			break;
+			
+			default:
+				System.out.println("\nOpcion no disponible\n");
+			}
+			
+		}while(band);
+		
+		sc.close();
+		
+	}
+	
+	
+	public static void altaCliente(Scanner sc) {
+			
+		System.out.print("\nIngrese nombre: ");
+		String nombre = sc.nextLine();
+		System.out.print("Ingrese apellido: ");
+		String apellido = sc.nextLine();
+		System.out.print("Ingrese domicilio: ");
+		String domicilio = sc.nextLine();
+		
+		boolean datoInvalido=false;
+		int dni=0;
+		do {
+			try {
+				datoInvalido=false;
+				System.out.print("Ingrese DNI: ");
+				dni = sc.nextInt();
+			}
+			catch(Exception e) {
+				System.out.println("\nDato no valido, vuelva a ingresar el DNI");
+				datoInvalido=true;
+				sc.nextLine();
+			}
+		}while(datoInvalido);
+	
+		List<Factura> facturas = null;
+		Cliente cliente = new Cliente(nombre, apellido, domicilio, dni, facturas);  
+		
+		clienteDaoImp.guardarCliente(cliente);
+		System.out.println("\nCliente registrado exitosamente.\n");
+		sc.nextLine();
+	}
 
-    public static void main(String[] args) {
-        
-        Scanner sc = new Scanner(System.in);
-        
-        boolean continuar = true;
-        
-        do {
-            System.out.println("         SISTEMA DE VENTAS         ");
-            System.out.println("___________________________________");
-            System.out.println("1. Alta de cliente");
-            System.out.println("2. Alta de producto");
-            System.out.println("3. Vender productos");
-            System.out.println("4. Buscar factura por ID");
-            System.out.println("5. Eliminar una factura");
-            System.out.println("6. Eliminar un producto");
-            System.out.println("7. Modificar datos del cliente");
-            System.out.println("8. Modificar precio del producto");
-            System.out.println("9. Mostrar todas las facturas");
-            System.out.println("10. Mostrar todos los clientes");
-            System.out.println("11. Facturas mayores a $500,000");
-            System.out.println("12. Salir");
-            System.out.println("___________________________________");
-            System.out.print("Elige una opción: ");
-            
-            while (!sc.hasNextInt()) {
-                System.out.println("Opción no válida. Intenta de nuevo.");
-                sc.next(); 
-                System.out.print("Elige una opción: ");
-            }
-            
-            String op = sc.nextLine();
-            
-            switch(op) {
-                case "1":
-                    AltaCliente(sc);
-                    break;
-                
-                case "2":
-                    AltaProducto(sc);
-                    break;
-                
-                case "3":
-                    VenderProducto(sc);
-                    break;
-                
-                case "4":
-                    System.out.print("\nIngrese el ID de la factura: ");
-                    long id = sc.nextLong();
-                    BuscarFactura(id);
-                    break;
-                
-                case "5":
-                    System.out.print("\nIngrese el ID de la factura para eliminar: ");
-                    long idE = sc.nextLong();
-                    EliminarFactura(idE);
-                    break;
-                
-                case "6":
-                    System.out.print("\nIngrese el ID del producto para eliminar: ");
-                    long idP = sc.nextLong();
-                    EliminarProducto(idP);
-                    break;
-                
-                case "7":
-                    ModificarCliente(sc);
-                    break;
-                
-                case "8":
-                    ModificarProducto(sc);
-                    break;
-                
-                case "9":
-                    MostrarFacturas();
-                    break;
-                
-                case "10":
-                    MostrarClientes();
-                    break;
-                
-                case "11":
-                    MostrarFacturasFiltradas();
-                    break;
-                
-                case "12":
-                    System.out.println("**********************************");
-                    System.out.println("Saliendo del Sistema...");
-                    continuar = false;
-                    break;
-                
-                default:
-                    System.out.println("\nOpción no válida. Intenta de nuevo.");
-            }
-            
-        } while(continuar);
-        
-        sc.close();
-    }
-    
-    
-    public static void AltaCliente(Scanner sc) {
-        ImpClienteDAO clienteDaoImp = new ImpClienteDAO(); 
-        
-        System.out.print("Ingrese ID del Cliente: ");
-        long id = sc.nextLong();
-        sc.nextLine();
-        System.out.print("Ingrese nombre del cliente: ");
-        String nombre = sc.nextLine();
-        System.out.print("Ingrese apellido del cliente: ");
-        String apellido = sc.nextLine();
-        System.out.print("Ingrese domicilio del cliente: ");
-        String domicilio = sc.nextLine();
-        System.out.print("Ingrese DNI del cliente: ");
-        int dni = sc.nextInt();
-        
-        Cliente cliente = new Cliente(id, nombre, apellido, domicilio, dni, true);  
-        clienteDaoImp.guardarCliente(cliente);
-        System.out.println("\n¡Cliente registrado con éxito!");
-    }
+	
+	public static void altaProducto(Scanner sc) {
+			
+		System.out.print("\nIngrese descripción del producto: ");
+		String descripcion = sc.nextLine();
+		
+		boolean datoInvalido=false;
+		int precioUnitario=0;
+		do {
+			try {
+				datoInvalido=false;
+				System.out.print("Ingrese precio unitario: ");
+				precioUnitario = sc.nextInt();
+			}
+			catch(Exception e) {
+				System.out.println("\nDato no valido, vuelva a ingresar el precio");
+				datoInvalido=true;
+				sc.nextLine();
+			}
+		}while(datoInvalido);
+	
+		Producto producto = new Producto(descripcion, precioUnitario);  
+		
+		productoDaoImp.guardarProducto(producto);
+		System.out.println("\nProducto registrado exitosamente.\n");
+		sc.nextLine();
+		
+	}
+	
+	
+	public static void venderProducto(Scanner sc) {
+		        
+		clienteDaoImp.mostrarTodosLosClientes();
+		
+		Cliente cliente = null;
+	    long idCliente=0;
+	    boolean datoInvalido=true;
+	    do {
+	    	try {
+	    		System.out.print("Ingrese el ID del Cliente: ");
+		        idCliente = sc.nextLong();
+		        
+		        cliente = clienteDaoImp.buscarClientePorId(idCliente);
 
-    public static void AltaProducto(Scanner sc) {
-        ImpProductoDAO productoDaoImp = new ImpProductoDAO();
+		        if (cliente == null) {
+		            System.out.println("Cliente no encontrado. Intente nuevamente");
+		        }
+		        else datoInvalido=false;
+	    	}
+	    	catch(Exception e) {
+	    		System.out.println("\nDato no valido, ingrese nuevamente el ID");
+	    		sc.nextLine();
+	    	}
+	    } while (datoInvalido);
         
-        System.out.print("Ingrese el ID del producto: ");
-        long id = sc.nextLong();  
-        sc.nextLine(); 
-        System.out.print("Ingrese descripción del producto: ");
-        String descripcion = sc.nextLine();
-        System.out.print("Ingrese precio unitario: ");
-        double precioUnitario = sc.nextDouble();
-
-        Producto producto = new Producto(id, descripcion, precioUnitario); 
-        productoDaoImp.guardarProducto(producto);
-        System.out.println("\n¡Producto registrado con éxito!");
-    }
-    
-    public static void VenderProducto(Scanner sc) {
-        ImpFacturaDAO facturaDaoImp = new ImpFacturaDAO();
+        productoDaoImp.mostrarTodosLosProductos();
+        
         Factura factura = new Factura();
-        factura.setFecha(LocalDate.now());
-
-        System.out.print("Ingrese el ID del cliente: ");
-        Long clienteId = sc.nextLong();
-
-        ImpClienteDAO clienteDaoImp = new ImpClienteDAO();
-        Cliente cliente = clienteDaoImp.buscarClientePorId(clienteId);
-
-        if (cliente == null) {
-            System.out.println("\n¡Cliente no encontrado!");
-            return;
-        }
-
-        factura.setCliente(cliente);
-
+        
         List<DetalleFactura> detalles = new ArrayList<>();
-        String agregar = "";  
-        boolean productosValidos = false; 
-
-        EntityTransaction transaction = manager.getTransaction();
-        try {
-            transaction.begin(); 
-
-            do {
-                DetalleFactura detalle = new DetalleFactura();
-
-                System.out.print("Ingrese el ID del producto: ");
-                Long productoId = sc.nextLong();
-                ImpProductoDAO ProductoDaoImp = new ImpProductoDAO();
-                Producto producto = ProductoDaoImp.buscarProductoPorId(productoId);
-
-                if (producto == null) {
-                    System.out.println("¡Producto no encontrado! 😕");
-                    continue;
-                }
-                detalle.setProducto(producto);
-
-                System.out.print("Ingrese la cantidad: ");
-                int cantidad = sc.nextInt();
-                detalle.setCantidad(cantidad);
-
-                detalle.calcularSubtotal();
-                detalle.setFactura(factura);
-                detalles.add(detalle);
-
-                productosValidos = true; 
-
-                System.out.print("¿Desea agregar otro producto? (s/n): ");
-                agregar = sc.next(); 
-
-            } while (agregar.equalsIgnoreCase("s")); 
-
-            if (!productosValidos) {
-                System.out.println("No se ha registrado ningún producto válido. Venta cancelada.");
-                return; 
-            }
-
-            factura.setDetalles(detalles);
-            factura.calcularTotal();
-
-            facturaDaoImp.guardarFactura(factura);  
-
-            transaction.commit();
-            System.out.println("\n¡Venta registrada con éxito! Factura ID: " + factura.getId());
-
-        } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();  // Rollback en caso de error
-            }
-            e.printStackTrace();
-            System.out.println("Se produjo un error al procesar la venta. Intente nuevamente.");
-        } finally {
-            if (manager.isOpen()) {
-                manager.close();  // Cerrar el EntityManager
-            }
-        }
-    }
-
-    
-    public static void BuscarFactura(long numId) {
-        ImpFacturaDAO factura = new ImpFacturaDAO();
-        Factura fact = factura.buscarFacturaPorId(numId);
-        fact.mostrarFactura();
-    }
-    
-    public static void EliminarFactura(long numId) {
-    	ImpFacturaDAO factura = new ImpFacturaDAO();
-        Factura fact = factura.buscarFacturaPorId(numId);
-        factura.eliminarFacturaLogicamente(fact);
-        fact.setEstado(false);
-        System.out.println("\n¡Factura eliminada con éxito! ");
-    }
-    
-    public static void EliminarProducto(long idProd) {
-        ImpProductoDAO producto = new ImpProductoDAO();
-        Producto prod = producto.buscarProductoPorId(idProd);
-        producto.eliminarProductoLogicamente(prod);
-        prod.setEstado(false);
-        System.out.println("\n¡Producto eliminado con éxito!");
-    }
-    
-    public static void ModificarCliente(Scanner sc) {
-    	ImpClienteDAO clienteDaoImp = new ImpClienteDAO();
-        Cliente cliente = null;
-        long idCliente;
-
+        String agregar = null;
         do {
-            System.out.print("Ingrese el ID del cliente a modificar: ");
-            idCliente = sc.nextLong();
-            cliente = clienteDaoImp.buscarClientePorId(idCliente);
+            Producto producto = null;
+    	    long idProducto;
+    	    datoInvalido=true;
+    	    do {
+    	    	try {
+    	    		System.out.print("\nIngrese el ID del Producto: ");
+    		        idProducto = sc.nextLong();
+    		        producto = productoDaoImp.buscarProductoPorId(idProducto);
 
-            if (cliente == null) {
-                System.out.println("Cliente no encontrado. Intente nuevamente");
-            }
-        } while (cliente == null);
+    		        if (producto == null) {
+    		            System.out.println("\nProducto no encontrado. Intente nuevamente");
+    		        }
+    		        else datoInvalido=false;
+    	    	}
+    	    	catch(Exception e) {
+    	    		System.out.println("\nDato no valido, ingrese nuevamente el ID");
+    	    		sc.nextLine();
+    	    	}
+    	        
+    	    } while (datoInvalido);
+
+            int cantidad=0;
+    		do {
+    			try {
+    				datoInvalido=false;
+    				System.out.print("\nIngrese la cantidad: ");
+    				cantidad = sc.nextInt();
+    			}
+    			catch(Exception e) {
+    				System.out.println("\nDato no valido, vuelva a ingresar la cantidad");
+    				datoInvalido=true;
+    				sc.nextLine();
+    			}
+    		}while(datoInvalido);
+            
+    		DetalleFactura detalle = new DetalleFactura(producto, cantidad, factura);
+    		
+            detalle.calcularSubtotal();
+            detalles.add(detalle);
+
+            System.out.print("\n¿Desea agregar otro producto? (s/n): ");
+            agregar = sc.next();
+        } while (agregar.equalsIgnoreCase("s"));
+
+        factura.setDetalles(detalles);
+        factura.setCliente(cliente);
+        factura.setCliente(cliente);
+        factura.calcularTotal(); 
+      
+        facturaDaoImp.guardarFactura(factura);
+
+        System.out.println("\nVenta registrada exitosamente con ID de factura: " + factura.getId());
 
         sc.nextLine();
+	}
+	
+	
+	public static void buscarFactura(long numId) {
+		Factura fact = facturaDaoImp.buscarFacturaPorId(numId);
+		if (fact != null) { 
+	        fact.mostrarFactura();
+	    } else {
+	        System.out.println("Factura no encontrada.");
+	    }
+	}
+	
+	
+	public static void eliminarFactura(long numId) {
+		Factura fact = facturaDaoImp.buscarFacturaPorId(numId);
+		fact.setEstado(false);
+		facturaDaoImp.eliminarFacturaLogicamente(fact);
+	}
+	
+	
+	public static void eliminarProducto(long idProd) {
+		Producto prod = productoDaoImp.buscarProductoPorId(idProd);
+		prod.setEstado(false);
+		productoDaoImp.eliminarProductoLogicamente(prod);
+	}
+	
+	
+	public static void modificarCliente(Scanner sc) {
+	    
+		clienteDaoImp.mostrarTodosLosClientes();
+		
+		Cliente cliente = null;
+	    long idCliente=0;
+	    boolean datoInvalido=true;
+	    do {
+	    	try {
+	    		System.out.print("\nIngrese el ID del cliente a modificar: ");
+		        idCliente = sc.nextLong();
+		        
+		        cliente = clienteDaoImp.buscarClientePorId(idCliente);
 
-        System.out.print("Ingrese el nuevo nombre: ");
-        cliente.setNombre(sc.nextLine());
+		        if (cliente == null) {
+		            System.out.println("Cliente no encontrado. Intente nuevamente");
+		        }
+		        else datoInvalido=false;
+	    	}
+	    	catch(Exception e) {
+	    		System.out.println("\nDato no valido, ingrese nuevamente el ID");
+	    		sc.nextLine();
+	    	}
+	    } while (datoInvalido);
 
-        System.out.print("Ingrese el nuevo apellido: ");
-        cliente.setApellido(sc.nextLine());
+	    sc.nextLine();
 
-        System.out.print("Ingrese el nuevo domicilio: ");
-        cliente.setDomicilio(sc.nextLine());
+	    System.out.print("Ingrese el nuevo nombre: ");
+	    cliente.setNombre(sc.nextLine());
 
-        System.out.print("Ingrese el nuevo DNI: ");
-        cliente.setDni(sc.nextInt());
+	    System.out.print("Ingrese el nuevo apellido: ");
+	    cliente.setApellido(sc.nextLine());
 
-        clienteDaoImp.modificarCliente(cliente);
-        System.out.println("\n¡Datos del cliente actualizados con éxito!");
-    }
+	    System.out.print("Ingrese el nuevo domicilio: ");
+	    cliente.setDomicilio(sc.nextLine());
 
-    public static void ModificarProducto(Scanner sc) {
-    	ImpProductoDAO productoDaoImp = new ImpProductoDAO();
-        Producto producto = null;
-        long idProducto;
+		do {
+			try {
+				datoInvalido=false;
+				System.out.print("Ingrese el nuevo DNI: ");
+				cliente.setDni(sc.nextInt());
+			}
+			catch(Exception e) {
+				System.out.println("\nDato no valido, vuelva a ingresar el DNI");
+				datoInvalido=true;
+				sc.nextLine();
+			}
+		}while(datoInvalido);
+		
+	    clienteDaoImp.modificarCliente(cliente);
+	    System.out.println("\nDatos del cliente actualizados.\n");
+	    
+	    List<Factura> facturas = cliente.getFacturas();
+	    if (facturas != null) { 
+	        for (Factura factura : facturas) {
+	            factura.setCliente(cliente);
+	            facturaDaoImp.modificarFactura(factura);
+	        }
+	    } else {
+	        System.out.println("El cliente no tiene facturas asociadas.");
+	    }
 
-        do {
-            System.out.print("Ingrese el ID del producto a modificar: ");
-            idProducto = sc.nextLong();
-            producto = productoDaoImp.buscarProductoPorId(idProducto);
+	}
+	
+	
+	public static void modificarProducto(Scanner sc) {
 
-            if (producto == null) {
-                System.out.println("Producto no encontrado. Intente nuevamente");
-            }
-        } while (producto == null);
+		productoDaoImp.mostrarTodosLosProductos();
+		
+		Producto producto = null;
+	    long idProducto;
+	    boolean datoInvalido=true;
+	    do {
+	    	try {
+	    		System.out.print("\nIngrese el ID del producto a modificar: ");
+		        idProducto = sc.nextLong();
+		        producto = productoDaoImp.buscarProductoPorId(idProducto);
+		        
+		        if (producto == null) {
+	                System.out.println("\nProducto no encontrado. Intente nuevamente");
+	            } else if (!producto.isEstado()) {
+	                System.out.println("El producto no esta disponible para modificar");
+	                return;
+	            } else {
+	                datoInvalido = false;
+	            }	    	}
+	    	catch(Exception e) {
+	    		System.out.println("\nDato no valido, ingrese nuevamente el ID");
+	    		sc.nextLine();
+	    	}
+	        
+	    } while (datoInvalido);
 
-        System.out.print("Ingrese el nuevo precio del producto: ");
-        double nuevoPrecio = sc.nextDouble();
-        producto.setPrecioUnitario(nuevoPrecio);
+		do {
+			try {
+				datoInvalido=false;
+				System.out.print("Ingrese nuevo precio unitario del producto: ");
+				producto.setPrecioUnitario(sc.nextDouble());
+			}
+			catch(Exception e) {
+				System.out.println("\nDato no valido, vuelva a ingresar el precio");
+				datoInvalido=true;
+				sc.nextLine();
+			}
+		}while(datoInvalido);
 
-        productoDaoImp.modificarPrecioProducto(producto);
-        System.out.println("\n¡Precio del producto modificado con éxito!");
-    }
-
-    public static void MostrarFacturas() {
-        try {
-        	ImpFacturaDAO facturaDaoImp = new ImpFacturaDAO(); 
-            System.out.println("\n** Listado de Facturas **");
-            facturaDaoImp.mostrarTodasLasFacturas();
-        } catch (Exception e) {
-            System.out.println("Error al mostrar las Facturas");
-            System.out.println(e.getMessage());
-        }
-    }
-
-    public static void MostrarClientes() {
-        try {
-            ImpClienteDAO clienteDaoImp = new ImpClienteDAO(); 
-            
-            System.out.println("\n** Listado de Clientes **");
-            
-            clienteDaoImp.mostrarTodosLosClientes(); 
-        } catch (Exception e) {
-            System.out.println("Error al mostrar los Clientes");
-            System.out.println(e.getMessage());
-        }
-    }
-
-
-    public static void MostrarFacturasFiltradas() {
+	    productoDaoImp.modificarPrecioProducto(producto);
+	    System.out.println("\nPrecio del producto modificado.\n");
+	}
+	
+	
+	public static void mostrarFacturas() {
+		
 		 try {
-			 	ImpFacturaDAO facturaDaoImp= new ImpFacturaDAO(); 
+		        System.out.println("Lista de Facturas:");
+				facturaDaoImp.mostrarTodasLasFacturas();
+	        } catch (Exception e) {
+	            System.out.println("Error al mostrar todas las Facturas");
+	            System.out.println(e.getMessage());
+	        }
+	    }
+	
+	
+	public static void mostrarClientes() {
+		 try {
+		        System.out.println("Lista de Clientes:");
+				clienteDaoImp.mostrarTodosLosClientes();
+	        } catch (Exception e) {
+	            System.out.println("Error al mostrar los Clientes");
+	            System.out.println(e.getMessage());
+	        }
+	    }
+		
+	
+	public static void mostrarFacturasFiltradas() {
+		 try {
 		        System.out.println("Lista de Facturas filtradas:");
 				facturaDaoImp.mostrarFacturasFiltradas();
 	        } catch (Exception e) {
 	            System.out.println("Error al mostrar las facturas");
 	            System.out.println(e.getMessage());
 	        }
+	    }
 	}
-    
-}

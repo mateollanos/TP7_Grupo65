@@ -1,8 +1,14 @@
 package ar.edu.unju.escmi.tp7.entities;
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -10,6 +16,7 @@ import javax.persistence.Table;
 public class Cliente {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "cliente_id")
 	private long id;
 	
@@ -25,23 +32,24 @@ public class Cliente {
 	@Column(name = "cliente_dni")
 	private int dni;
 	
+	@OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+	private List<Factura> facturas;
+	
 	@Column(name = "cliente_estado")
-	private boolean estado;
+	private boolean estado = true;
 	
 	
-	public Cliente(long id, String nombre, String apellido, String domicilio, int dni, boolean estado) {
+	public Cliente(String nombre, String apellido, String domicilio, int dni, List<Factura> facturas) {
 		super();
-		this.id = id;
 		this.nombre = nombre;
 		this.apellido = apellido;
 		this.domicilio = domicilio;
 		this.dni = dni;
-		this.estado = estado;
+		this.facturas = facturas;
 	}
 	
 	
 	public Cliente() {
-		// TODO Auto-generated constructor stub
 	}
 
 
@@ -82,10 +90,18 @@ public class Cliente {
 		this.estado = estado;
 	}
 	
-	
+	public List<Factura> getFacturas() {
+		return facturas;
+	}
+
+	public void setFacturas(List<Factura> facturas) {
+		this.facturas = facturas;
+	}
+
+
 	public void mostrarDatos() {
-		System.out.println("Cliente: " + id);
-		System.out.println("/nNombre del cliente: " + apellido + ", " + nombre);
+		System.out.println("\nCliente: " + id);
+		System.out.println("Nombre del cliente: " + apellido + ", " + nombre);
 		System.out.println("DNI: " + dni);
 		System.out.println("Domicilio: " + domicilio);
 	}
