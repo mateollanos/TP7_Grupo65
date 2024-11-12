@@ -24,18 +24,16 @@ public class Producto {
 	private double precioUnitario;
 	
 	@Column(name = "prod_estado")
-	private boolean estado;
+	private boolean estado = true;
 	
-	public Producto(long id, String descripcion, double precioUnitario) {
-        this.id = id;
-        this.descripcion = descripcion;
-        this.precioUnitario = precioUnitario;
-        this.estado = true;
-    }
-	
-    public Producto() {
+	public Producto() {
 	}
-
+	
+	public Producto(String descripcion, double precioUnitario) {
+		super();
+		this.descripcion = descripcion;
+		this.precioUnitario = precioUnitario;
+	}
 
 	public long getId() {
 		return id;
@@ -75,4 +73,5 @@ public class Producto {
 		System.out.println("Descripcion: "+descripcion);
 		System.out.println("Precio: "+precioUnitario);
 	}
+	
 }
