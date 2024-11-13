@@ -255,9 +255,18 @@ public class Main {
 	
 	
 	public static void buscarFactura(long numId) {
-		Factura fact = facturaDaoImp.buscarFacturaPorId(numId);
-		if (fact != null) { 
+	    Factura fact = facturaDaoImp.buscarFacturaPorId(numId);
+	    
+	    if (fact != null) { 
 	        fact.mostrarFactura();
+	        
+	        List<DetalleFactura> detalles = fact.getDetalles();
+	        
+	        if (detalles != null) {
+	            System.out.println("Cantidad de productos en la factura: " + detalles.size());
+	        } else {
+	            System.out.println("La factura no tiene productos asociados.");
+	        }
 	    } else {
 	        System.out.println("Factura no encontrada.");
 	    }
